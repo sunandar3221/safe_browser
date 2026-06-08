@@ -4,7 +4,8 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setSystemUIMode(SystemUiMode.immersiveSticky); // Sembunyikan status & nav bar
+  // Perbaikan: gunakan setEnabledSystemUIMode
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   runApp(const SafeBrowserApp());
 }
 
@@ -352,8 +353,8 @@ class _BrowserScreenState extends State<BrowserScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => false, // Cegah tombol back Android
+    return PopScope( // Mengganti WillPopScope untuk versi Flutter terbaru
+      canPop: false, // Cegah tombol back Android
       child: Scaffold(
         body: SafeArea(
           child: Column(
