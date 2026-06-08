@@ -8,7 +8,13 @@ import android.view.accessibility.AccessibilityEvent
 class MyAccessibilityService : AccessibilityService() {
 
     companion object {
+        var isRunning = false // Tambahkan ini
         var isBlocking = false
+    }
+
+    override fun onServiceConnected() {
+        super.onServiceConnected()
+        isRunning = true // Akan true saat user mengaktifkan izin di pengaturan
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -31,4 +37,9 @@ class MyAccessibilityService : AccessibilityService() {
     }
 
     override fun onInterrupt() {}
+
+    override fun onDestroy() {
+        super.onDestroy()
+        isRunning = false // Akan false saat user mematikan izin di pengaturan
+    }
 }

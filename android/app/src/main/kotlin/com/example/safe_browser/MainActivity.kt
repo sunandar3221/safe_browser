@@ -1,10 +1,7 @@
 // android/app/src/main/kotlin/com/example/safe_browser/MainActivity.kt
 package com.example.safe_browser
 
-import android.app.ActivityManager
-import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import io.flutter.embedding.android.FlutterActivity
@@ -26,14 +23,15 @@ class MainActivity : FlutterActivity() {
                 "stopKiosk" -> {
                     MyAccessibilityService.isBlocking = false
                     stopKioskMode()
-                    finishAffinity() // Tutup aplikasi sepenuhnya
+                    finishAffinity()
                     result.success(true)
                 }
                 "checkEmulator" -> {
                     result.success(isEmulator())
                 }
                 "checkAccessibilityPermission" -> {
-                    result.success(isAccessibilityEnabled())
+                    // PERBAIKAN: Baca langsung dari status Service yang sedang berjalan
+                    result.success(MyAccessibilityService.isRunning)
                 }
                 "openAccessibilitySettings" -> {
                     val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
@@ -47,8 +45,6 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun startKioskMode() {
-        // Catatan: Jika aplikasi bukan Device Owner, startLockTask() akan memunculkan dialog 
-        // meminta user untuk mengizinkan "Screen Pinning". Ini perilaku standar Android.
         try {
             startLockTask()
         } catch (e: Exception) {
@@ -62,16 +58,6 @@ class MainActivity : FlutterActivity() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-    }
-
-    private fun isAccessibilityEnabled(): Boolean {
-        val am = getSystemService(Context.ACCESSIBILITY_SERVICE) as android.view.accessibility.AccessibilityManager
-        val enabledServices = Settings.Secure.getString(
-            contentResolver,
-            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-        ) ?: return false
-
-        return enabledServices.contains("$packageName/.MyAccessibilityService")
     }
 
     private fun isEmulator(): Boolean {
