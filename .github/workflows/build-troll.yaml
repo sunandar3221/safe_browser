@@ -1,0 +1,43 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main # Atau ganti 'master' kalau branch utama lu namanya master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Ambil kode dari repository lu
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Install Java 17 di Server GitHub
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 3. Install Flutter di Server GitHub
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      # 4. Ambil semua package/dependencies
+      - name: Install Dependencies
+        run: flutter pub get
+
+      # 5. Build APK otomatis (Lisensi udah diurus sama Flutter Action)
+      - name: Build APK
+        run: flutter build apk --release --target-platform android-arm,android-arm64
+
+      # 6. Upload file APK biar bisa di-download sama lu
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: APK-Troll-Lu
+          path: build/app/outputs/flutter-apk/*.apk

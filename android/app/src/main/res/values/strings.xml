@@ -1,0 +1,5 @@
+<!-- android/app/src/main/res/values/strings.xml -->
+<resources>
+    <string name="app_name">Safe Browser</string>
+    <string name="accessibility_service_description">Mengunci aplikasi agar tidak bisa keluar tanpa password.</string>
+</resources>
