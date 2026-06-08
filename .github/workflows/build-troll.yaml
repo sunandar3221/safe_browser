@@ -33,7 +33,7 @@ jobs:
 
       # 5. Build APK otomatis (Lisensi udah diurus sama Flutter Action)
       - name: Build APK
-        run: flutter build apk --split-per-abi
+        run: flutter build apk --release --target-platform android-arm,android-arm64
 
       # 6. Upload file APK biar bisa di-download sama lu
       - name: Upload APK Artifact

@@ -4,7 +4,6 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  // Perbaikan: gunakan setEnabledSystemUIMode
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   runApp(const SafeBrowserApp());
 }
@@ -271,7 +270,7 @@ class _PermissionScreenState extends State<PermissionScreen> {
 }
 
 // ==========================================
-// 4. BROWSER SCREEN & EXIT LOGIC
+// 4. BROWSER SCREEN & EXIT LOGIC (FIXED)
 // ==========================================
 class BrowserScreen extends StatefulWidget {
   const BrowserScreen({super.key});
@@ -280,16 +279,47 @@ class BrowserScreen extends StatefulWidget {
   State<BrowserScreen> createState() => _BrowserScreenState();
 }
 
-class _BrowserScreenState extends State<BrowserScreen> {
+class _BrowserScreenState extends State<BrowserScreen> with WidgetsBindingObserver {
   late WebViewController _controller;
   final TextEditingController _urlController = TextEditingController(text: 'https://www.google.com');
 
   @override
   void initState() {
     super.initState();
+    // Daftarkan observer untuk memantau lifecycle aplikasi
+    WidgetsBinding.instance.addObserver(this);
+
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      // Tambahkan NavigationDelegate untuk update URL di search bar saat klik link
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onUrlChange: (UrlChange change) {
+            if (change.url != null) {
+              _urlController.text = change.url!;
+            }
+          },
+        ),
+      )
       ..loadRequest(Uri.parse(_urlController.text));
+  }
+
+  @override
+  void dispose() {
+    // Hapus observer saat widget dihancurkan
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  // Memantau saat aplikasi kembali ke foreground (layar dinyalakan)
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    if (state == AppLifecycleState.resumed) {
+      // FIX BUG LAYAR HITAM: Paksa reload WebView saat kembali dari background
+      _controller.reload();
+    }
   }
 
   void _loadUrl() {
@@ -353,7 +383,7 @@ class _BrowserScreenState extends State<BrowserScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return PopScope( // Mengganti WillPopScope untuk versi Flutter terbaru
+    return PopScope(
       canPop: false, // Cegah tombol back Android
       child: Scaffold(
         body: SafeArea(
